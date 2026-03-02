@@ -1,6 +1,11 @@
-const StatisticLine  = ({text, value}) => {
+const StatisticLine = ({ text, value, percentage=false}) => {
     return (
-        <p>{text} {value}</p>
+        <>
+            <tr>
+                <td>{text}</td>
+                <td>{value}{percentage ? '%' : ''}</td>
+            </tr>
+        </>
     )
 }
 
