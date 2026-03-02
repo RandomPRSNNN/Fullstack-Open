@@ -1,0 +1,14 @@
+import Button from "./Button"
+
+const Feedback = ({addGood, addBad, addNeutral}) => {
+    return (
+        <div>
+            <h1>Give Feedback Below:</h1>
+            <Button text='Good' onClick={addGood}/>
+            <Button text='Bad' onClick={addBad}/>
+            <Button text='Neutral' onClick={addNeutral}/>
+        </div>
+    )
+}
+
+export default Feedback
