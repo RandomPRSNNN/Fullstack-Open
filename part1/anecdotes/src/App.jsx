@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import MostVotes from '../componets/MostVotes'
+import Daily from '../componets/Daily'
 
 const App = () => {
   const anecdotes = [
@@ -15,25 +17,11 @@ const App = () => {
   const [selected, setSelected] = useState(0)
   let [votes, setVotes] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
 
-  const displayNext = () => {
-    const randomNumber = Math.floor(Math.random() * (anecdotes.length))
-    setSelected(randomNumber)
-  }
-
-  const vote = () => {
-    let copy = [...votes]
-    copy[selected] += 1
-    setVotes(copy);
-  }
-
   return (
     <div>
-      {anecdotes[selected]}
+      <Daily votes={votes} anecdotes={anecdotes} selected={selected} setSelected={setSelected} setVotes={setVotes} />
       <br />
-      Has {votes[selected]} votes.
-      <br />
-      <button onClick={displayNext}>Next anecdote</button>
-      <button onClick={vote}>Vote</button>
+      <MostVotes votes={votes} anecdotes={anecdotes} />
     </div>
   )
 }
