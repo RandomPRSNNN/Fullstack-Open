@@ -1,6 +1,6 @@
 import personService from '../services/persons'
 
-const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNewPhone }) => {
+const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNewPhone, setNotification }) => {
 
     const handleNameInput = (event) => {
         setNewName(event.target.value)
@@ -17,6 +17,7 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
             .then(response => {
                 const updatePersonList = persons.map(person => person.id === response.id ? updatedPersonNumber : person)
                 setPersons(updatePersonList)
+                setNotification(`${personToUpdate.name}'s number has been updated`)
                 setNewName('')
                 setNewPhone('')
             })
@@ -41,6 +42,7 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
         personService.create(newPerson)
             .then(returnedPerson => {
                 setPersons(persons.concat(returnedPerson))
+                setNotification(`Added ${newName}`)
                 setNewName('')
                 setNewPhone('')
             })

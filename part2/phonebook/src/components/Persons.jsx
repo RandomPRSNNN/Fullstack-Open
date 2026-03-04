@@ -1,6 +1,6 @@
 import personService from '../services/persons'
 
-const Persons = ({ listToShow, setPersons }) => {
+const Persons = ({ listToShow, setPersons, setNotification }) => {
 
     const handleDelete = (event) => {
         const confirmed = window.confirm(`Delte ${event.target.name}?`);
@@ -8,6 +8,9 @@ const Persons = ({ listToShow, setPersons }) => {
             personService.remove(event.target.id)
                 .then(response => {
                     setPersons(listToShow.filter(person => person.id !== response.id))
+                })
+                .catch(error => {
+                    setNotification(`${event.target.name} has already been deleted from the server`, true)
                 })
         }
     }

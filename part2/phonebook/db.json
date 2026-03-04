@@ -16,14 +16,19 @@
       "id": "4"
     },
     {
-      "id": "baef",
+      "id": "140e",
       "name": "Edwin",
-      "number": "123456789"
+      "number": "1234567"
     },
     {
-      "id": "9146",
-      "name": "James May",
-      "number": "087564736"
+      "id": "5364",
+      "name": "James",
+      "number": "1234567876543"
+    },
+    {
+      "id": "1990",
+      "name": "BOB",
+      "number": "12345644444"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
