@@ -10,11 +10,26 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
         setNewPhone(event.target.value)
     }
 
+    const updatePersonsNumber = () => {
+        const personToUpdate = persons.find(user => user.name.toLowerCase() === newName.toLowerCase())
+        const updatedPersonNumber = { ...personToUpdate, number: newPhone }
+        personService.update(personToUpdate.id, updatedPersonNumber)
+            .then(response => {
+                const updatePersonList = persons.map(person => person.id === response.id ? updatedPersonNumber : person)
+                setPersons(updatePersonList)
+                setNewName('')
+                setNewPhone('')
+            })
+    }
+
     const addNewPerson = (event) => {
         event.preventDefault()
 
-        if (persons.some(person => person.name === newName)) {
-            alert(`${newName} is already added to phonebook`)
+        if (persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
+            const confirmNumberUpdate = window.confirm(`${newName} is already in the phonebook, update the number instead?`);
+            if (confirmNumberUpdate) {
+                updatePersonsNumber()
+            }
             return
         }
         else if (persons.some(person => person.number === newPhone)) {

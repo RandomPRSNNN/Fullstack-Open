@@ -22,6 +22,4 @@ const Persons = ({ listToShow, setPersons }) => {
     )
 }
 
-
-
 export default Persons
