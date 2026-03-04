@@ -1,4 +1,6 @@
-const PersonForm = ({newName, newPhone, setNewName, persons, setPersons, setNewPhone}) => {
+import personService from '../services/persons'
+
+const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNewPhone }) => {
 
     const handleNameInput = (event) => {
         setNewName(event.target.value)
@@ -8,24 +10,26 @@ const PersonForm = ({newName, newPhone, setNewName, persons, setPersons, setNewP
         setNewPhone(event.target.value)
     }
 
-      const addNewPerson = (event) => {
-    event.preventDefault()
+    const addNewPerson = (event) => {
+        event.preventDefault()
 
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
+        if (persons.some(person => person.name === newName)) {
+            alert(`${newName} is already added to phonebook`)
+            return
+        }
+        else if (persons.some(person => person.number === newPhone)) {
+            alert(`${newPhone} is already added to phonebook`)
+            return
+        }
+
+        const newPerson = { name: newName, number: newPhone }
+        personService.create(newPerson)
+            .then(returnedPerson => {
+                setPersons(persons.concat(returnedPerson))
+                setNewName('')
+                setNewPhone('')
+            })
     }
-    else if (persons.some(person => person.number === newPhone)) {
-      alert(`${newPhone} is already added to phonebook`)
-      return
-    }
-
-    const newInputPerson = { name: newName, number: newPhone, id: persons.length + 1 }
-
-    setPersons(persons.concat(newInputPerson))
-    setNewName('')
-    setNewPhone('')
-  }
 
     return (
         <form onSubmit={addNewPerson}>

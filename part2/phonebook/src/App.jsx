@@ -10,11 +10,11 @@ const App = () => {
   const [newPhone, setNewPhone] = useState('')
   const [filterList, setFilterList] = useState([])
 
-  useEffect(()=>{
+  useEffect(() => {
     axios.get('http://localhost:3001/persons')
-    .then(response=>{
-      setPersons(response.data)
-    })
+      .then(response => {
+        setPersons(response.data)
+      })
   }, [])
 
   const listToShow = filterList.length > 0 ? filterList : persons
@@ -24,9 +24,17 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter persons={persons} setFilterList={setFilterList} />
       <h3>Add new</h3>
-      <PersonForm newName={newName} newPhone={newPhone} setNewName={setNewName} setNewPhone={setNewPhone} persons={persons} setPersons={setPersons} />
+      <PersonForm
+        newName={newName}
+        newPhone={newPhone}
+        setNewName={setNewName}
+        setNewPhone={setNewPhone}
+        persons={persons}
+        setPersons={setPersons} />
       <h3>Numbers</h3>
-      <Persons listToShow={listToShow} />
+      <Persons
+        listToShow={listToShow} 
+        setPersons={setPersons}/>
     </div>
   )
 }
