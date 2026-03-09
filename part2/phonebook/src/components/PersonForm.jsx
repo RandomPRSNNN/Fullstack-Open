@@ -26,7 +26,11 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
     const addNewPerson = (event) => {
         event.preventDefault()
 
-        if (persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
+        if(!newName || !newPhone){
+            setNotification('Check inputs', true)
+            return
+        }
+        else if (persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
             const confirmNumberUpdate = window.confirm(`${newName} is already in the phonebook, update the number instead?`);
             if (confirmNumberUpdate) {
                 updatePersonsNumber()
@@ -37,7 +41,7 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
             alert(`${newPhone} is already added to phonebook`)
             return
         }
-
+        
         const newPerson = { name: newName, number: newPhone }
         personService.create(newPerson)
             .then(returnedPerson => {
@@ -45,6 +49,9 @@ const PersonForm = ({ newName, newPhone, setNewName, persons, setPersons, setNew
                 setNotification(`Added ${newName}`)
                 setNewName('')
                 setNewPhone('')
+            })
+            .catch(error => {
+                setNotification(error.toString(), true)
             })
     }
 
