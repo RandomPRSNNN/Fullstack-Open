@@ -1,4 +1,8 @@
+require('dotenv').config()
+const Person = require('./models/person')
+
 const express = require('express')
+const mongoose = require('mongoose')
 const app = express()
 const cors = require('cors')
 app.use(cors())
@@ -45,62 +49,38 @@ let persons = [
 ]
 
 app.get('/api/persons', (request, response) => {
-    response.send(persons);
-
-    response.status(200)
+    Person.find({}).then(people => {
+        response.json(people)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id == id)
-
-    if (person) {
-        response.send(person)
-        response.status(200)
-    }
-    else {
-        response.status(404).end()
-    }
+    Person.findById(request.params.id).then(person => {
+        response.json(person)
+    })
 })
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
-    if (!body) {
-        return response.status(400).json({
-            error: 'content missing'
-        })
-    }
-
-    if (!request.body.name) {
-        return response.status(400).json({
-            error: 'Name is missing'
-        })
-    }
-
-    if (!request.body.number) {
-        return response.status(400).json({
-            error: 'Number is missing'
-        })
-    }
-
-    const checkName = persons.filter(person => person.name.toLowerCase() === request.body.name.toLowerCase())
-    if (checkName.length) {
-        return response.status(400).json({
-            error: 'Name already excists in DB'
-        })
-    }
-
-    const newPerson = {
-        id: Math.random() * 1000,
+    const newPerson = new Person({
         name: body.name,
         number: body.number
-    }
-
-    persons = persons.concat(newPerson)
-
-    response.json(newPerson)
+    })
+    newPerson.save().then(savedNote => response.json(savedNote))
 })
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id
@@ -120,5 +100,5 @@ app.get('/info', (request, response) => {
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })

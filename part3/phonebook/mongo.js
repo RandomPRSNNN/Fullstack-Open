@@ -42,5 +42,4 @@ switch (true) {
 const url = `mongodb+srv://fullstackopen:${password}@notes.hgdqgey.mongodb.net/phoneBookApp?retryWrites=true&w=majority&appName=phoneBook`
 
 mongoose.set('strictQuery', false)
-
 mongoose.connect(url, { family: 4 }) //forces IPv4 to be used
