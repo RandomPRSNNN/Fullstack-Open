@@ -1,0 +1,17 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "Application of saving and voting up blogs",
+  "license": "MIT",
+  "author": "Edwin Valentelis",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --inspect index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0"
+  }
+}
