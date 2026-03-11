@@ -7,7 +7,8 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "dev": "node --inspect index.js"
+    "dev": "node --inspect index.js",
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
