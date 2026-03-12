@@ -125,6 +125,30 @@ test('no url 400', async () => {
         .expect(400)
 })
 
+test('deletion of blog', async () => {
+    const newBlog = {
+        title: 'Blog Blog',
+        url: 'https://edwin.com/yas',
+        author: 'Kitchen Gold'
+    }
+
+    const createdBlog = await api.post('/api/blogs/').send(newBlog)
+    await api.delete(`/api/blogs/${createdBlog.body.id}`).expect(204)
+})
+
+test('update blog likes', async () => {
+    const newBlog = {
+        title: 'Blog Blog',
+        url: 'https://edwin.com/yas',
+        author: 'Kitchen Gold'
+    }
+
+    const createdBlog = await api.post('/api/blogs/').send(newBlog)
+    await api.put(`/api/blogs/${createdBlog.body.id}`).send({likes: 999})
+    const updatedBlog = await api.get(`/api/blogs/${createdBlog.body.id}`)
+    assert.strictEqual(999, updatedBlog.body.likes)
+})
+
 
 
 after(async () => {
