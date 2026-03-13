@@ -1,5 +1,6 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
+const testHelper = require('./test_helper')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
@@ -7,80 +8,58 @@ const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
 const api = supertest(app)
+describe('Use API tests', () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
 
-const usersInDB = async () => {
-    const users = await User.find({})
-    return users.map(user => user.toJSON())
-}
+        const saltRounds = 10
+        const passwordHash = await bcrypt.hash('secretPassword', saltRounds)
+        const user = new User({ username: 'admin', passwordHash })
 
-beforeEach(async () => {
-    await User.deleteMany({})
+        await user.save()
+    })
 
-    const saltRounds = 10
-    const passwordHash = await bcrypt.hash('secretPassword', saltRounds)
-    const user = new User({ username: 'admin', passwordHash })
+    test('creating new user', async () => {
+        const usersAtStart = await testHelper.usersInDB()
 
-    await user.save()
-})
+        await api
+            .post('/api/users')
+            .send(testHelper.singleUser)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
 
-test('creating new user', async () => {
-    const usersAtStart = await usersInDB()
+        const usersAtEnd = await testHelper.usersInDB()
+        assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
 
-    const newUser = {
-        username: 'testyTest',
-        name: 'Edwin Joes',
-        password: '12345',
-    }
+        const usernames = usersAtEnd.map(user => user.username)
+        assert(usernames.includes(testHelper.singleUser.username))
+    })
 
-    await api
-        .post('/api/users')
-        .send(newUser)
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
+    test('creating user with incorrect username length', async () => {
+        await api
+            .post('/api/users')
+            .send(testHelper.singleUserShortUsername)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
 
-    const usersAtEnd = await usersInDB()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
+        const usersAtEnd = await testHelper.usersInDB()
+        const usernames = usersAtEnd.map(user => user.username)
+        assert(!usernames.includes(testHelper.singleUserShortUsername.username))
+    })
 
-    const usernames = usersAtEnd.map(user => user.username)
-    assert(usernames.includes(newUser.username))
-})
+    test('creating user with incorrect password length', async () => {
+        await api
+            .post('/api/users')
+            .send(testHelper.singleUserShortPassword)
+            .expect(422)
+            .expect('Content-Type', /application\/json/)
 
-test('creating user with incorrect username length', async () => {
-    const newUser = {
-        username: 'NO',
-        name: 'Edwin Wrong',
-        password: '12345',
-    }
+        const usersAtEnd = await testHelper.usersInDB()
+        const usernames = usersAtEnd.map(user => user.username)
+        assert(!usernames.includes(testHelper.singleUserShortPassword.username))
+    })
 
-    await api
-        .post('/api/users')
-        .send(newUser)
-        .expect(400)
-        .expect('Content-Type', /application\/json/)
-
-    const usersAtEnd = await usersInDB()
-    const usernames = usersAtEnd.map(user => user.username)
-    assert(!usernames.includes(newUser.username))
-})
-
-test('creating user with incorrect password length', async () => {
-    const newUser = {
-        username: 'sheepAsleep',
-        name: 'Edwin Wrong Password',
-        password: 'NO',
-    }
-
-    await api
-        .post('/api/users')
-        .send(newUser)
-        .expect(422)
-        .expect('Content-Type', /application\/json/)
-
-    const usersAtEnd = await usersInDB()
-    const usernames = usersAtEnd.map(user => user.username)
-    assert(!usernames.includes(newUser.username))
-})
-
-after(async () => {
-    await mongoose.connection.close()
+    after(async () => {
+        await mongoose.connection.close()
+    })
 })

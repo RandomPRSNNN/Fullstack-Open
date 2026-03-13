@@ -1,182 +1,139 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe } = require('node:test')
+const testHelper = require('./test_helper')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
+const api = supertest(app)
+
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
-const api = supertest(app)
+describe('API blogs tests', () => {
+    beforeEach(async () => {
+        await Blog.deleteMany({})
+        await Blog.insertMany(testHelper.listOfBlogs)
+        await User.deleteMany({})
+    })
 
-const listOfBlogs = [
-    {
-        title: 'Edwin in the world',
-        author: 'James May',
-        url: 'nyt.com',
-        likes: 3,
-        __v: 0
-    },
-    {
-        title: 'Eating Chicken with cheese',
-        author: 'James May',
-        url: 'google.com',
-        likes: 2,
-        __v: 0
-    },
-    {
-        title: 'How to dance like the young kids',
-        author: 'James May',
-        url: 'yahoo.com',
-        likes: 7,
-        __v: 0
-    },
-    {
-        title: 'Go To Statement Considered Harmful',
-        author: 'Edsger W. Dijkstra',
-        url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
-        likes: 5,
-        __v: 0
-    },
-    {
-        title: 'How to talk to cheese',
-        author: 'Maire Joe',
-        url: 'lovebooks.com',
-        likes: 11,
-        __v: 0
-    }
-]
+    test('blogs are returned as json', async () => {
+        const result = await api
+            .get('/api/blogs')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
 
-const createLoggedInUserGetToken = async () => {
-    const user = {
-        username: 'testing',
-        password: 'cheese'
-    }
+        assert.strictEqual(result.body.length, testHelper.listOfBlogs.length)
+    })
 
-    await api.post('/api/users').send(user)
-    const loggedIn = await api.post('/api/login').send(user)
-    return `Bearer ${loggedIn.body.token}`
-}
+    test('blogs unique identifier is ID', async () => {
+        const allBlogs = await api.get('/api/blogs')
 
-beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(listOfBlogs)
-    await User.deleteMany({})
-})
-
-test('blogs are returned as json', async () => {
-    const result = await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/)
-
-    assert.strictEqual(result.body.length, listOfBlogs.length)
-})
-
-test('blogs unique identifier is ID', async () => {
-    const allBlogs = await api.get('/api/blogs')
-
-    let check = true
-    for (const blog of allBlogs.body) {
-        if (!blog.id) {
-            check = false
+        let check = true
+        for (const blog of allBlogs.body) {
+            if (!blog.id) {
+                check = false
+            }
         }
-    }
 
-    assert.strictEqual(check, true)
-})
+        assert.strictEqual(check, true)
+    })
 
-test('new blog created', async () => {
-    const newBlog = {
-        title: 'How to add a new blog',
-        author: 'Betsy Gold',
-        url: 'https://homepages.cwi.nl/~storm/',
-        likes: 7
-    }
+    test('new blog created', async () => {
+        const newUserToken = await testHelper.createLoggedInUserGetToken()
 
-    await api.post('/api/blogs')
-        .set('Authorization', await createLoggedInUserGetToken())
-        .send(newBlog)
-    const afterPost = await api.get('/api/blogs')
+        await api.post('/api/blogs')
+            .set('Authorization', newUserToken)
+            .send(testHelper.singleBlog)
+        const afterPost = await api.get('/api/blogs')
 
-    const newExists = afterPost.body.some(blog =>
-        blog.title === newBlog.title && blog.author === newBlog.author
-    )
+        const newExists = afterPost.body.some(blog =>
+            blog.title === testHelper.singleBlog.title && blog.author === testHelper.singleBlog.author
+        )
 
-    assert.strictEqual(true, newExists)
-})
+        assert.strictEqual(true, newExists)
+    })
 
-test('default likes 0', async () => {
-    const newBlog = {
-        title: 'Blog Blog',
-        author: 'Kitchen Gold',
-        url: 'https://homepages.cwi.nl'
-    }
+    test('default likes 0', async () => {
+        const newBlog = {
+            title: 'Blog Blog',
+            author: 'Kitchen Gold',
+            url: 'https://homepages.cwi.nl'
+        }
 
-    const result = await api.post('/api/blogs')
-        .set('Authorization', await createLoggedInUserGetToken())
-        .send(newBlog)
-    const check = result.body.likes === 0 ? true : false
+        const newUserToken = await testHelper.createLoggedInUserGetToken()
 
-    assert.strictEqual(true, check)
-})
+        const result = await api.post('/api/blogs')
+            .set('Authorization', newUserToken)
+            .send(newBlog)
+        const check = result.body.likes === 0 ? true : false
 
-test('no title 400', async () => {
-    const newBlog = {
-        author: 'Kitchen Gold',
-        url: 'https://homepages.cwi.nl'
-    }
+        assert.strictEqual(true, check)
+    })
 
-    await api.post('/api/blogs')
-        .set('Authorization', await createLoggedInUserGetToken())
-        .send(newBlog)
-        .expect(400)
-})
+    test('no title 400', async () => {
+        const newBlog = {
+            author: 'Kitchen Gold',
+            url: 'https://homepages.cwi.nl'
+        }
 
-test('no url 400', async () => {
-    const newBlog = {
-        title: 'Blog Blog',
-        author: 'Kitchen Gold'
-    }
+        const newUserToken = await testHelper.createLoggedInUserGetToken()
 
-    await api.post('/api/blogs')
-        .set('Authorization', await createLoggedInUserGetToken())
-        .send(newBlog)
-        .expect(400)
-})
+        await api.post('/api/blogs')
+            .set('Authorization', newUserToken)
+            .send(newBlog)
+            .expect(400)
+    })
 
-test('deletion of blog', async () => {
-    const newBlog = {
-        title: 'Blog Blog',
-        url: 'https://edwin.com/yas',
-        author: 'Kitchen Gold'
-    }
+    test('no url 400', async () => {
+        const newBlog = {
+            title: 'Blog Blog',
+            author: 'Kitchen Gold'
+        }
 
-    const userToken = await createLoggedInUserGetToken()
+        const newUserToken = await testHelper.createLoggedInUserGetToken()
 
-    const createdBlog = await api.post('/api/blogs/')
-        .set('Authorization', userToken)
-        .send(newBlog)
+        await api.post('/api/blogs')
+            .set('Authorization', newUserToken)
+            .send(newBlog)
+            .expect(400)
+    })
 
-    await api.delete(`/api/blogs/${createdBlog.body.id}`)
-        .set('Authorization', userToken)
-        .expect(204)
-})
+    test('deletion of blog', async () => {
+        const newBlog = {
+            title: 'Blog Blog',
+            url: 'https://edwin.com/yas',
+            author: 'Kitchen Gold'
+        }
 
-test('update blog likes', async () => {
-    const newBlog = {
-        title: 'Blog Blog',
-        url: 'https://edwin.com/yas',
-        author: 'Kitchen Gold'
-    }
+        const userToken = await testHelper.createLoggedInUserGetToken()
 
-    const createdBlog = await api.post('/api/blogs/')
-        .set('Authorization', await createLoggedInUserGetToken())
-        .send(newBlog)
-    await api.put(`/api/blogs/${createdBlog.body.id}`).send({ likes: 999 })
-    const updatedBlog = await api.get(`/api/blogs/${createdBlog.body.id}`)
-    assert.strictEqual(999, updatedBlog.body.likes)
-})
+        const createdBlog = await api.post('/api/blogs/')
+            .set('Authorization', userToken)
+            .send(newBlog)
 
-after(async () => {
-    await mongoose.connection.close()
+        await api.delete(`/api/blogs/${createdBlog.body.id}`)
+            .set('Authorization', userToken)
+            .expect(204)
+    })
+
+    test('update blog likes', async () => {
+        const newBlog = {
+            title: 'Blog Blog',
+            url: 'https://edwin.com/yas',
+            author: 'Kitchen Gold'
+        }
+
+        const newUserToken = await testHelper.createLoggedInUserGetToken()
+        const createdBlog = await api.post('/api/blogs/')
+            .set('Authorization', await newUserToken)
+            .send(newBlog)
+
+        await api.put(`/api/blogs/${createdBlog.body.id}`).send({ likes: 999 })
+        const updatedBlog = await api.get(`/api/blogs/${createdBlog.body.id}`)
+        assert.strictEqual(999, updatedBlog.body.likes)
+    })
+
+    after(async () => {
+        await mongoose.connection.close()
+    })
 })
