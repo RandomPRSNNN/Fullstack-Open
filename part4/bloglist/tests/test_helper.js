@@ -44,6 +44,24 @@ const singleBlog = {
     likes: 7
 }
 
+const singleBlogNoUrl = {
+    title: 'How to add a new blog',
+    author: 'Betsy Gold',
+    likes: 7
+}
+
+const singleBlogNoTitle = {
+    author: 'Betsy Gold',
+    url: 'https://homepages.cwi.nl/~storm/',
+    likes: 7
+}
+
+const singleBlogNoLikes = {
+    title: 'How to add a new blog',
+    author: 'Betsy Gold',
+    url: 'https://homepages.cwi.nl/~storm/'
+}
+
 const singleUser = {
     username: 'testyTest',
     name: 'Edwin Joes',
@@ -79,10 +97,14 @@ const usersInDB = async () => {
 }
 
 
+
 module.exports = {
     createLoggedInUserGetToken,
     listOfBlogs,
     singleBlog,
+    singleBlogNoLikes,
+    singleBlogNoUrl,
+    singleBlogNoTitle,
     singleUser,
     singleUserShortUsername,
     singleUserShortPassword,

@@ -54,62 +54,40 @@ describe('API blogs tests', () => {
     })
 
     test('default likes 0', async () => {
-        const newBlog = {
-            title: 'Blog Blog',
-            author: 'Kitchen Gold',
-            url: 'https://homepages.cwi.nl'
-        }
-
         const newUserToken = await testHelper.createLoggedInUserGetToken()
 
         const result = await api.post('/api/blogs')
             .set('Authorization', newUserToken)
-            .send(newBlog)
+            .send(testHelper.singleBlogNoLikes)
         const check = result.body.likes === 0 ? true : false
 
         assert.strictEqual(true, check)
     })
 
     test('no title 400', async () => {
-        const newBlog = {
-            author: 'Kitchen Gold',
-            url: 'https://homepages.cwi.nl'
-        }
-
         const newUserToken = await testHelper.createLoggedInUserGetToken()
 
         await api.post('/api/blogs')
             .set('Authorization', newUserToken)
-            .send(newBlog)
+            .send(testHelper.singleBlogNoTitle)
             .expect(400)
     })
 
     test('no url 400', async () => {
-        const newBlog = {
-            title: 'Blog Blog',
-            author: 'Kitchen Gold'
-        }
-
         const newUserToken = await testHelper.createLoggedInUserGetToken()
 
         await api.post('/api/blogs')
             .set('Authorization', newUserToken)
-            .send(newBlog)
+            .send(testHelper.singleBlogNoUrl)
             .expect(400)
     })
 
     test('deletion of blog', async () => {
-        const newBlog = {
-            title: 'Blog Blog',
-            url: 'https://edwin.com/yas',
-            author: 'Kitchen Gold'
-        }
-
         const userToken = await testHelper.createLoggedInUserGetToken()
 
         const createdBlog = await api.post('/api/blogs/')
             .set('Authorization', userToken)
-            .send(newBlog)
+            .send(testHelper.singleBlog)
 
         await api.delete(`/api/blogs/${createdBlog.body.id}`)
             .set('Authorization', userToken)
@@ -117,16 +95,10 @@ describe('API blogs tests', () => {
     })
 
     test('update blog likes', async () => {
-        const newBlog = {
-            title: 'Blog Blog',
-            url: 'https://edwin.com/yas',
-            author: 'Kitchen Gold'
-        }
-
         const newUserToken = await testHelper.createLoggedInUserGetToken()
         const createdBlog = await api.post('/api/blogs/')
             .set('Authorization', await newUserToken)
-            .send(newBlog)
+            .send(testHelper.singleBlog)
 
         await api.put(`/api/blogs/${createdBlog.body.id}`).send({ likes: 999 })
         const updatedBlog = await api.get(`/api/blogs/${createdBlog.body.id}`)
