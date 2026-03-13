@@ -46,8 +46,6 @@ test('creating new user', async () => {
 })
 
 test('creating user with incorrect username length', async () => {
-    const usersAtStart = await usersInDB()
-
     const newUser = {
         username: 'NO',
         name: 'Edwin Wrong',
@@ -66,8 +64,6 @@ test('creating user with incorrect username length', async () => {
 })
 
 test('creating user with incorrect password length', async () => {
-    const usersAtStart = await usersInDB()
-
     const newUser = {
         username: 'sheepAsleep',
         name: 'Edwin Wrong Password',

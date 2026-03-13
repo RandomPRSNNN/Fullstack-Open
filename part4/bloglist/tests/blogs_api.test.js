@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
@@ -45,12 +46,24 @@ const listOfBlogs = [
     }
 ]
 
+const createLoggedInUserGetToken = async () => {
+    const user = {
+        username: 'testing',
+        password: 'cheese'
+    }
+
+    await api.post('/api/users').send(user)
+    const loggedIn = await api.post('/api/login').send(user)
+    return `Bearer ${loggedIn.body.token}`
+}
+
 beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(listOfBlogs)
+    await User.deleteMany({})
 })
 
-test('notes are returned as json', async () => {
+test('blogs are returned as json', async () => {
     const result = await api
         .get('/api/blogs')
         .expect(200)
@@ -80,7 +93,9 @@ test('new blog created', async () => {
         likes: 7
     }
 
-    await api.post('/api/blogs').send(newBlog)
+    await api.post('/api/blogs')
+        .set('Authorization', await createLoggedInUserGetToken())
+        .send(newBlog)
     const afterPost = await api.get('/api/blogs')
 
     const newExists = afterPost.body.some(blog =>
@@ -97,7 +112,9 @@ test('default likes 0', async () => {
         url: 'https://homepages.cwi.nl'
     }
 
-    const result = await api.post('/api/blogs').send(newBlog)
+    const result = await api.post('/api/blogs')
+        .set('Authorization', await createLoggedInUserGetToken())
+        .send(newBlog)
     const check = result.body.likes === 0 ? true : false
 
     assert.strictEqual(true, check)
@@ -110,6 +127,7 @@ test('no title 400', async () => {
     }
 
     await api.post('/api/blogs')
+        .set('Authorization', await createLoggedInUserGetToken())
         .send(newBlog)
         .expect(400)
 })
@@ -121,6 +139,7 @@ test('no url 400', async () => {
     }
 
     await api.post('/api/blogs')
+        .set('Authorization', await createLoggedInUserGetToken())
         .send(newBlog)
         .expect(400)
 })
@@ -132,8 +151,15 @@ test('deletion of blog', async () => {
         author: 'Kitchen Gold'
     }
 
-    const createdBlog = await api.post('/api/blogs/').send(newBlog)
-    await api.delete(`/api/blogs/${createdBlog.body.id}`).expect(204)
+    const userToken = await createLoggedInUserGetToken()
+
+    const createdBlog = await api.post('/api/blogs/')
+        .set('Authorization', userToken)
+        .send(newBlog)
+
+    await api.delete(`/api/blogs/${createdBlog.body.id}`)
+        .set('Authorization', userToken)
+        .expect(204)
 })
 
 test('update blog likes', async () => {
@@ -143,13 +169,13 @@ test('update blog likes', async () => {
         author: 'Kitchen Gold'
     }
 
-    const createdBlog = await api.post('/api/blogs/').send(newBlog)
-    await api.put(`/api/blogs/${createdBlog.body.id}`).send({likes: 999})
+    const createdBlog = await api.post('/api/blogs/')
+        .set('Authorization', await createLoggedInUserGetToken())
+        .send(newBlog)
+    await api.put(`/api/blogs/${createdBlog.body.id}`).send({ likes: 999 })
     const updatedBlog = await api.get(`/api/blogs/${createdBlog.body.id}`)
     assert.strictEqual(999, updatedBlog.body.likes)
 })
-
-
 
 after(async () => {
     await mongoose.connection.close()
