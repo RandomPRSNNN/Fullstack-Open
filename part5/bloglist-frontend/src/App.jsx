@@ -3,10 +3,12 @@ import blogService from './services/blogs'
 import BlogList from './components/BlogList'
 import Login from './components/Login'
 import Create from './components/Create'
+import Notification from './components/Notification'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
+  const [notificationText, setNotificationText] = useState('')
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -25,7 +27,13 @@ const App = () => {
 
   return (
     <div>
-      {!user && <Login setUser={setUser} />}
+      <Notification
+        text={notificationText}/>
+      {!user &&
+        <Login
+          setUser={setUser}
+          setNotificationText={setNotificationText}
+        />}
       {user &&
         <BlogList
           blogs={blogs}
@@ -34,7 +42,8 @@ const App = () => {
         <Create
           user={user}
           setBlogs={setBlogs}
-          blogs={blogs} />}
+          blogs={blogs}
+          setNotificationText={setNotificationText} />}
     </div>
   )
 }
