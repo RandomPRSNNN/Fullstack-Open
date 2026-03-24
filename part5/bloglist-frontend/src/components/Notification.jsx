@@ -14,13 +14,7 @@ const Notification = ({ text }) => {
     if (!text || !visible) return null;
 
     return (
-        <div style={{
-            color: 'blue',
-            border: `1px solid grey`,
-            padding: '10px',
-            width: '25%',
-            margin: '10px 0'
-        }}>
+        <div className='notification'>
             <h4>{text}</h4>
         </div>
     );

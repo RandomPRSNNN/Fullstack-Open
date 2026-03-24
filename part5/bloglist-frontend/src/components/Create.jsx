@@ -1,7 +1,7 @@
 import { useState } from "react"
 import blogService from '../services/blogs'
 
-const Create = ({ setNotificationText, setBlogs, blogs }) => {
+const Create = ({ setNotificationText, setBlogs, blogs, toggleHide }) => {
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
     const [url, setUrl] = useState('')
@@ -20,6 +20,7 @@ const Create = ({ setNotificationText, setBlogs, blogs }) => {
         setUrl('')
         setBlogs(blogs.concat(result))
         setNotificationText(`New blog created: ${title} by ${author}`)
+        toggleHide()
     }
 
     return (
