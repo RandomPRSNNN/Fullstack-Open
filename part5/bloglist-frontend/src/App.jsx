@@ -48,7 +48,10 @@ const App = () => {
               toggleHide={() => createBlogRef.current.toggleVisibility()}
             />
           </Togglable>
-          <BlogList blogs={blogs} user={user} />
+          <BlogList
+            setNotificationText={setNotificationText}
+            blogs={blogs}
+            user={user} />
         </>
       )}
     </div>

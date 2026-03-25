@@ -1,10 +1,12 @@
 import Blog from "./Blog"
 
-const BlogList = ({ blogs, user }) => {
+const BlogList = ({ blogs, user, setNotificationText }) => {
     const logOut = () => {
         window.localStorage.clear()
         window.location.reload()
     }
+
+    const mostLikedFirst = [...blogs].sort((a, b) => b.likes - a.likes)
 
     return (
         <div>
@@ -14,8 +16,12 @@ const BlogList = ({ blogs, user }) => {
                 <button onClick={logOut}>Logout</button>
             </p>
             <div>
-                {blogs.map(blog =>
-                    <Blog key={blog.id} blog={blog} />
+                {mostLikedFirst.map(blog =>
+                    <Blog
+                        user={user}
+                        setNotificationText={setNotificationText}
+                        key={blog.id}
+                        blog={blog} />
                 )}
             </div>
         </div>
