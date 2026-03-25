@@ -1,12 +1,21 @@
 import { useState } from "react"
 import BlogService from '../services/blogs'
 
-const Blog = ({ blog, setNotificationText, user }) => {
+const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandler }) => {
   const [displayBlog, setDisplayBlog] = useState(blog)
   const [showDetails, setShowDetails] = useState(false)
 
   const toggleVisibility = () => {
     setShowDetails(!showDetails)
+  }
+
+  //for testing
+  const handleLikeClick = () => {
+    if (passedLikeHandler) {
+      passedLikeHandler(displayBlog)
+    } else {
+      handleBlogLike(displayBlog)
+    }
   }
 
   const handleBlogLike = async (blog) => {
@@ -18,9 +27,8 @@ const Blog = ({ blog, setNotificationText, user }) => {
   const handleBlogDelete = async (blog) => {
     if (window.confirm(`Remove blog: ${blog.title} by ${blog.author}?`)) {
       const response = await BlogService.remove(blog)
-      
-      if(response.status === 204)
-      {
+
+      if (response.status === 204) {
         setDisplayBlog(null)
         setNotificationText('Blog deleted')
       }
@@ -31,14 +39,13 @@ const Blog = ({ blog, setNotificationText, user }) => {
     <>
       {displayBlog && (
         <div className="blog">
-          {displayBlog.title}
+          {displayBlog.title} by {displayBlog.author}
           <button id='toggle-visibility-button' onClick={() => toggleVisibility()}>
             {showDetails ? 'hide' : 'view'}
           </button>
 
           {showDetails && (
             <div>
-              <div>{displayBlog.author}</div>
               <div>
                 <a
                   href={displayBlog.url.startsWith('http') ? displayBlog.url : `https://${displayBlog.url}`}
@@ -51,7 +58,7 @@ const Blog = ({ blog, setNotificationText, user }) => {
               <div>Created by {displayBlog.user.name}</div>
               <div>
                 {displayBlog.likes}
-                <button onClick={() => handleBlogLike(displayBlog)}>Like</button>
+                <button className="likeButton" onClick={() => handleLikeClick(displayBlog)}>Like</button>
               </div>
 
               {blog.user.username === user.username && (

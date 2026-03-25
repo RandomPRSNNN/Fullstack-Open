@@ -16,5 +16,13 @@ export default [
       // 2-space indentation is the only active rule
       'indent': ['error', 2, { "SwitchCase": 1 }]
     }
+  },
+  {
+    files: ['**/*.test.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.vitest
+      }
+    }
   }
 ]
