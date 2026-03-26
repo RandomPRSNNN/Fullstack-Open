@@ -57,13 +57,15 @@ const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandl
               </div>
               <div>Created by {displayBlog.user.name}</div>
               <div>
-                {displayBlog.likes}
+                <div className="likes-count">
+                  {displayBlog.likes}
+                </div>
                 <button className="likeButton" onClick={() => handleLikeClick(displayBlog)}>Like</button>
               </div>
 
               {blog.user.username === user.username && (
                 <div>
-                  <button onClick={() => handleBlogDelete(displayBlog)}>Remove</button>
+                  <button className='removeButton' onClick={() => handleBlogDelete(displayBlog)}>Remove</button>
                 </div>
               )}
             </div>
