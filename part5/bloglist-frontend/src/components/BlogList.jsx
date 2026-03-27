@@ -1,6 +1,6 @@
 import Blog from "./Blog"
 
-const BlogList = ({ blogs, user, setNotificationText }) => {
+const BlogList = ({ blogs, user, setNotificationText, setBlogs }) => {
     const logOut = () => {
         window.localStorage.clear()
         window.location.reload()
@@ -18,6 +18,8 @@ const BlogList = ({ blogs, user, setNotificationText }) => {
             <div>
                 {mostLikedFirst.map(blog =>
                     <Blog
+                        setBlogs={setBlogs}
+                        blogs={blogs}
                         user={user}
                         setNotificationText={setNotificationText}
                         key={blog.id}

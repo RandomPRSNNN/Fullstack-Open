@@ -1,8 +1,7 @@
 import { useState } from "react"
 import BlogService from '../services/blogs'
 
-const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandler }) => {
-  const [displayBlog, setDisplayBlog] = useState(blog)
+const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandler, setBlogs, blogs }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   const toggleVisibility = () => {
@@ -12,16 +11,17 @@ const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandl
   //for testing
   const handleLikeClick = () => {
     if (passedLikeHandler) {
-      passedLikeHandler(displayBlog)
+      passedLikeHandler(blog)
     } else {
-      handleBlogLike(displayBlog)
+      handleBlogLike(blog)
     }
   }
 
   const handleBlogLike = async (blog) => {
     const likedBlog = { ...blog, likes: blog.likes + 1 }
     const updatedBlog = await BlogService.update(likedBlog)
-    setDisplayBlog(updatedBlog)
+
+    setBlogs(blogs.map(b => b.id === updatedBlog.id ? updatedBlog : b))
   }
 
   const handleBlogDelete = async (blog) => {
@@ -29,18 +29,19 @@ const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandl
       const response = await BlogService.remove(blog)
 
       if (response.status === 204) {
-        setDisplayBlog(null)
         setNotificationText('Blog deleted')
+        const updatedBlogs = blogs.filter(blog2 => blog2.id !== blog.id)
+        setBlogs(updatedBlogs)
       }
     }
   }
 
   return (
     <>
-      {displayBlog && (
+      {blog && (
         <div className="blog">
-          {displayBlog.title} by {displayBlog.author}
-          <button id='toggle-visibility-button' onClick={() => toggleVisibility()}>
+          {blog.title} by {blog.author}
+          <button onClick={() => toggleVisibility()}>
             {showDetails ? 'hide' : 'view'}
           </button>
 
@@ -48,24 +49,24 @@ const Blog = ({ blog, setNotificationText, user, handleBlogLike: passedLikeHandl
             <div>
               <div>
                 <a
-                  href={displayBlog.url.startsWith('http') ? displayBlog.url : `https://${displayBlog.url}`}
+                  href={blog.url.startsWith('http') ? blog.url : `https://${blog.url}`}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {displayBlog.url}
+                  {blog.url}
                 </a>
               </div>
-              <div>Created by {displayBlog.user.name}</div>
+              <div>Created by {blog.user.name}</div>
               <div>
                 <div className="likes-count">
-                  {displayBlog.likes}
+                  {blog.likes}
                 </div>
-                <button className="likeButton" onClick={() => handleLikeClick(displayBlog)}>Like</button>
+                <button className="likeButton" onClick={() => handleLikeClick(blog)}>Like</button>
               </div>
 
               {blog.user.username === user.username && (
                 <div>
-                  <button className='removeButton' onClick={() => handleBlogDelete(displayBlog)}>Remove</button>
+                  <button className='removeButton' onClick={() => handleBlogDelete(blog)}>Remove</button>
                 </div>
               )}
             </div>

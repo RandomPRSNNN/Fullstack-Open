@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { loginWith, createBlog } from './helper'
+import { create } from 'node:domain'
 
 test.describe('Blog app', () => {
     test.beforeEach(async ({ page, request }) => {
@@ -46,19 +47,14 @@ test.describe('Blog app', () => {
     test.describe('When logged in', () => {
         test.beforeEach(async ({ page }) => {
             loginWith(page, 'blogTEST', '87654321')
-        })
 
-        test('a new blog can be created', async ({ page }) => {
             await createBlog(page,
                 'Playwright created blog',
                 'James Oliver',
                 'ilovetesting.com')
+        })
 
-            await createBlog(page,
-                'Just another Blog TEST',
-                'Mary Jones',
-                'howtoeataburger.com')
-
+        test('a new blog can be created', async ({ page }) => {
             const targetBlog = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
 
             await expect(targetBlog).toBeVisible()
@@ -66,11 +62,6 @@ test.describe('Blog app', () => {
         })
 
         test('blog can be liked', async ({ page }) => {
-            await createBlog(page,
-                'Playwright created blog',
-                'James Oliver',
-                'ilovetesting.com')
-
             const targetBlog = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
             await expect(targetBlog).toBeVisible()
             await targetBlog.getByRole('button', { name: 'view' }).click()
@@ -79,11 +70,6 @@ test.describe('Blog app', () => {
             await expect(page.locator('.likes-count')).toHaveText('1')
         })
         test('blog can be deleted', async ({ page }) => {
-            await createBlog(page,
-                'Playwright created blog',
-                'James Oliver',
-                'ilovetesting.com')
-
             const targetBlog = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
             await expect(targetBlog).toBeVisible()
             await targetBlog.getByRole('button', { name: 'view' }).click()
@@ -94,11 +80,6 @@ test.describe('Blog app', () => {
             await expect(targetBlog).toBeHidden()
         })
         test('blog can be deleted by user who created it', async ({ page }) => {
-            await createBlog(page,
-                'Playwright created blog',
-                'James Oliver',
-                'ilovetesting.com')
-
             const targetBlog = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
             await expect(targetBlog).toBeVisible()
             await targetBlog.getByRole('button', { name: 'view' }).click()
@@ -113,39 +94,23 @@ test.describe('Blog app', () => {
         })
         test('blogs sorted by likes', async ({ page }) => {
             await createBlog(page,
-                'Playwright created blog',
-                'James Oliver',
-                'ilovetesting.com')
+                'Just another Blog TEST',
+                'Mary Jones',
+                'howtoeataburger.com')
 
-            const targetBlog = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
-            await expect(targetBlog).toBeVisible()
-            await targetBlog.getByRole('button', { name: 'view' }).click()
+            const blog1 = page.locator('.blog').filter({ hasText: 'Playwright created blog by James Oliver' })
+            const blog2 = page.locator('.blog').filter({ hasText: 'Just another Blog TEST by Mary Jones' })
 
-            await targetBlog.getByRole('button', { name: 'Like' }).click()
-            await expect(targetBlog.locator('.likes-count')).toHaveText('1')
-            await targetBlog.getByRole('button', { name: 'Like' }).click()
-            await expect(targetBlog.locator('.likes-count')).toHaveText('2')
+            await blog1.getByRole('button', { name: 'view' }).click()
+            await blog2.getByRole('button', { name: 'view' }).click()
 
-            await page.getByRole('button', { name: 'Logout' }).click()
+            await blog2.getByRole('button', { name: 'like' }).click()
 
-            await loginWith(page, 'removerUser', '12345678')
-            await createBlog(page,
-                'Second blog',
-                'McDonald',
-                'thisTestisCute.com')
+            await expect(blog2.locator('.likes-count')).toHaveText('1')
+            await expect(blog1.locator('.likes-count')).toHaveText('0')
 
-            const secondBlog = page.locator('.blog').filter({ hasText: 'Second blog by McDonald' })
-            await expect(secondBlog).toBeVisible()
-            await secondBlog.getByRole('button', { name: 'view' }).click()
-
-            await secondBlog.getByRole('button', { name: 'Like' }).click()
-            await expect(secondBlog.locator('.likes-count')).toHaveText('1')
-
-            await secondBlog.getByRole('button', { name: 'Like' }).click()
-            await expect(secondBlog.locator('.likes-count')).toHaveText('2')
-
-            await secondBlog.getByRole('button', { name: 'Like' }).click()
-            await expect(secondBlog.locator('.likes-count')).toHaveText('3')
+            expect(page.locator('.blog').first()).toContainText('Just another Blog TEST by Mary Jones')
+            expect(page.locator('.blog').last()).toContainText('Playwright created blog by James Oliver')
         })
     })
 })

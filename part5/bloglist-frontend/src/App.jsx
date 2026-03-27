@@ -51,6 +51,7 @@ const App = () => {
           <BlogList
             setNotificationText={setNotificationText}
             blogs={blogs}
+            setBlogs={setBlogs}
             user={user} />
         </>
       )}
