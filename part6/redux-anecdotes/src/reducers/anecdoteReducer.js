@@ -1,40 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { setNotification, clearNotification } from './notificationReducer'
+import anecdoteService from '../services/anecdoteService'
 
-const initialState = [
-  {
-    id: 1,
-    content: 'If it hurts, do it more often',
-    votes: 0
-  },
-  {
-    id: 2,
-    content: 'Adding manpower to a late software project makes it later!',
-    votes: 0
-  },
-  {
-    id: 3,
-    content: 'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-    votes: 0
-  },
-  {
-    id: 4,
-    content: 'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-    votes: 0
-  },
-  {
-    id: 5,
-    content: 'Premature optimization is the root of all evil.',
-    votes: 0
-  },
-  {
-    id: 6,
-    content: 'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
-    votes: 0
-  }
-]
-
-let timerId //ensure timers are tracked
+let timerId
 
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
@@ -43,58 +11,55 @@ const anecdoteSlice = createSlice({
     create(state, action) {
       state.push(action.payload)
     },
-
     addVote(state, action) {
       const id = action.payload
-      const anecdoteToChange = state.find(a => a.id === id)
-      const updatedAnecdote = {
-        ...anecdoteToChange,
-        votes: anecdoteToChange.votes + 1
-      }
-
       return state.map(anecdote =>
-        anecdote.id !== id ?
-          anecdote : updatedAnecdote
+        anecdote.id !== id ? anecdote : { ...anecdote, votes: anecdote.votes + 1 }
       )
     },
-
     setAnecdotes(state, action) {
       return action.payload
     }
   }
 })
 
-export const createWithNotification = (anecdote) => {
-  return async (dispatch) => {
-    dispatch(create(anecdote))
+export const { create, addVote, setAnecdotes } = anecdoteSlice.actions
 
-    dispatch(setNotification(`Created:  ${anecdote.content}`))
+export const notify = (message, seconds = 5) => {
+  return (dispatch) => {
+    dispatch(setNotification(message))
 
     if (timerId) {
-      clearTimeout(timerId);
+      clearTimeout(timerId)
     }
 
     timerId = setTimeout(() => {
       dispatch(clearNotification())
-    }, 5000)
+    }, seconds * 1000)
+  }
+}
+
+export const createAnecdote = (content) => {
+  return async (dispatch) => {
+    const newAnecdote = await anecdoteService.createNew(content)
+    dispatch(create(newAnecdote))
+    dispatch(notify(`Created: ${newAnecdote.content}`), 6)
   }
 }
 
 export const voteWithNotification = (anecdote) => {
   return async (dispatch) => {
-    dispatch(addVote(anecdote.id))
-
-    dispatch(setNotification(`You voted for: ${anecdote.content}`))
-
-    if (timerId) {
-      clearTimeout(timerId);
-    }
-
-    timerId = setTimeout(() => {
-      dispatch(clearNotification())
-    }, 5000)
+    const votedAnecdote = await anecdoteService.vote(anecdote)
+    dispatch(addVote(votedAnecdote.id))
+    dispatch(notify(`You voted for: ${anecdote.content}`), 3)
   }
 }
 
-export const { create, addVote, setAnecdotes } = anecdoteSlice.actions
+export const initAnecdotes = () => {
+  return async (dispatch) => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch(setAnecdotes(anecdotes))
+  }
+}
+
 export default anecdoteSlice.reducer
