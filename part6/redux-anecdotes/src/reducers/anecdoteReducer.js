@@ -38,15 +38,10 @@ let timerId //ensure timers are tracked
 
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
-  initialState,
+  initialState: [],
   reducers: {
     create(state, action) {
-      const content = action.payload
-      state.push({
-        content,
-        id: getId(),
-        votes: 0
-      })
+      state.push(action.payload)
     },
 
     addVote(state, action) {
@@ -61,17 +56,19 @@ const anecdoteSlice = createSlice({
         anecdote.id !== id ?
           anecdote : updatedAnecdote
       )
+    },
+
+    setAnecdotes(state, action) {
+      return action.payload
     }
   }
 })
 
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-export const createWithNotification = (content) => {
+export const createWithNotification = (anecdote) => {
   return async (dispatch) => {
-    dispatch(create(content))
+    dispatch(create(anecdote))
 
-    dispatch(setNotification(`Created:  ${content}`))
+    dispatch(setNotification(`Created:  ${anecdote.content}`))
 
     if (timerId) {
       clearTimeout(timerId);
@@ -99,5 +96,5 @@ export const voteWithNotification = (anecdote) => {
   }
 }
 
-export const { create, addVote } = anecdoteSlice.actions
+export const { create, addVote, setAnecdotes } = anecdoteSlice.actions
 export default anecdoteSlice.reducer
