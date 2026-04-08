@@ -3,6 +3,7 @@ import { getAnecdotes } from './requests'
 import AnecdoteForm from './components/AnecdoteForm'
 import Notification from './components/Notification'
 import AnecdoteList from './components/AnecdoteList'
+import { NotificationContextProvider } from './NotificationContext'
 
 const App = () => {
   const result = useQuery({
@@ -10,8 +11,6 @@ const App = () => {
     queryFn: getAnecdotes,
     retry: false
   })
-
-  console.log(JSON.parse(JSON.stringify(result)))
 
   if (result.isLoading) {
     return <div>Loading....</div>
@@ -23,12 +22,12 @@ const App = () => {
   const anecdotes = result.data
 
   return (
-    <div>
+    <NotificationContextProvider>
       <h3>Anecdote app</h3>
       <Notification />
       <AnecdoteForm />
       <AnecdoteList anecdotes={anecdotes} />
-    </div>
+    </NotificationContextProvider>
   )
 }
 
