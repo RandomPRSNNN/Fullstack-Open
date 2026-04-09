@@ -20,7 +20,6 @@ let requestLogger = morgan(function (tokens, request, response) {
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.log('EDWInnnnnn')
     console.error(error.message)
 
     if (error.name === 'CastError') {
