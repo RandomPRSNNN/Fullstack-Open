@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
 import './index.css'
-import blogService from './services/blogs'
+import { useEffect, useRef } from 'react'
+import { initBlogs } from './reducers/blogReducer'
+import { useDispatch, useSelector } from 'react-redux'
+import { reloadUserData } from './reducers/userReducer'
+
 import BlogList from './components/BlogList'
 import Login from './components/Login'
 import Create from './components/Create'
@@ -8,33 +11,24 @@ import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 
 const App = () => {
-	const [blogs, setBlogs] = useState([])
-	const [user, setUser] = useState(null)
-	const [notificationText, setNotificationText] = useState('')
+	const dispatch = useDispatch()
+	const user = useSelector((state) => state.user)
 	const createBlogRef = useRef()
 
 	useEffect(() => {
-		blogService.getAll().then((blogs) => setBlogs(blogs))
-	}, [])
+		dispatch(initBlogs())
+	}, [dispatch])
 
 	useEffect(() => {
-		const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
-		if (loggedUserJSON) {
-			const user = JSON.parse(loggedUserJSON)
-			setUser(user)
-			blogService.setToken(user.token)
-		}
+		dispatch(reloadUserData())
 	}, [])
 
 	return (
 		<div>
-			<Notification text={notificationText} />
+			<Notification />
 
-			{!user ? (
-				<Login
-					setUser={setUser}
-					setNotificationText={setNotificationText}
-				/>
+			{!user.username ? (
+				<Login />
 			) : (
 				<>
 					<Togglable
@@ -42,21 +36,12 @@ const App = () => {
 						ref={createBlogRef}
 					>
 						<Create
-							user={user}
-							setBlogs={setBlogs}
-							blogs={blogs}
-							setNotificationText={setNotificationText}
 							toggleHide={() =>
 								createBlogRef.current.toggleVisibility()
 							}
 						/>
 					</Togglable>
-					<BlogList
-						setNotificationText={setNotificationText}
-						blogs={blogs}
-						setBlogs={setBlogs}
-						user={user}
-					/>
+					<BlogList />
 				</>
 			)}
 		</div>

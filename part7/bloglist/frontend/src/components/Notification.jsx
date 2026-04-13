@@ -1,17 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 
-const Notification = ({ text }) => {
-	const [visible, setVisible] = useState(true)
-	useEffect(() => {
-		setVisible(true)
-		const timer = setTimeout(() => {
-			setVisible(false)
-		}, 3000)
-
-		return () => clearTimeout(timer)
-	}, [text])
-
-	if (!text || !visible) return null
+const Notification = () => {
+	const text = useSelector((state) => state.notification.text)
+	if (!text) return null
 
 	return (
 		<div className="notification">
