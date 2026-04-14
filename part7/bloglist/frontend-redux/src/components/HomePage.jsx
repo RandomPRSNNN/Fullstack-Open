@@ -1,19 +1,17 @@
-import './index.css'
-import { useEffect, useRef } from 'react'
-import { initBlogs } from './reducers/blogReducer'
+import { reloadUserData } from '../reducers/userReducer'
 import { useDispatch, useSelector } from 'react-redux'
-import { reloadUserData } from './reducers/userReducer'
+import { initBlogs } from '../reducers/blogReducer'
+import { useRef, useEffect } from 'react'
 
-import BlogList from './components/BlogList'
-import Login from './components/Login'
-import Create from './components/Create'
-import Notification from './components/Notification'
-import Togglable from './components/Togglable'
+import Togglable from './Togglable'
+import Create from './Create'
+import BlogList from './BlogList'
+import Login from './Login'
 
-const App = () => {
+const HomePage = () => {
 	const dispatch = useDispatch()
-	const user = useSelector((state) => state.user)
 	const createBlogRef = useRef()
+	const user = useSelector((state) => state.user)
 
 	useEffect(() => {
 		dispatch(initBlogs())
@@ -25,12 +23,10 @@ const App = () => {
 
 	return (
 		<div>
-			<Notification />
-
 			{!user.username ? (
 				<Login />
 			) : (
-				<>
+				<div>
 					<Togglable
 						buttonLabel="Create new Blog"
 						ref={createBlogRef}
@@ -42,10 +38,10 @@ const App = () => {
 						/>
 					</Togglable>
 					<BlogList />
-				</>
+				</div>
 			)}
 		</div>
 	)
 }
 
-export default App
+export default HomePage
