@@ -2,6 +2,7 @@ import { displayNotification } from '../reducers/notificationReducer'
 import { removeBlog, handleLike } from '../reducers/blogReducer'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useNavigate } from 'react-router'
+import BlogComments from './BlogComments'
 import BlogService from '../services/blogs'
 
 const BlogInfo = () => {
@@ -67,6 +68,7 @@ const BlogInfo = () => {
 					</div>
 				)}
 			</div>
+			<BlogComments blog={blog}/>
 		</div>
 	)
 }

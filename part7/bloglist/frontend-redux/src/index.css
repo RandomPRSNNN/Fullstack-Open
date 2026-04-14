@@ -6,6 +6,12 @@
 	font-size: 17px;
 }
 
+a,
+a:visited {
+	color: #2a6dfd;
+	text-decoration: none;
+}
+
 .blog {
 	border: 1px solid rgb(0, 0, 0);
 	margin: 10px auto;

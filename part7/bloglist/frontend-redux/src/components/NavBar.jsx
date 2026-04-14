@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logOutUser } from '../reducers/userReducer'
 import { Link } from 'react-router'
 import Notification from './Notification'
+import BlogService from '../services/blogs'
 
 const NavBar = () => {
 	const dispatch = useDispatch()
@@ -25,10 +26,12 @@ const NavBar = () => {
 			</Link>
 			<div className="navItem boldText">
 				{user.name} is logged in
-				<button className="logout-button" onClick={() => logOut()}>Logout</button>
+				<button className="logout-button" onClick={() => logOut()}>
+					Logout
+				</button>
 			</div>
-			<div className='navItem'>
-				<Notification/>
+			<div className="navItem">
+				<Notification />
 			</div>
 		</div>
 	)

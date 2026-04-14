@@ -7,34 +7,48 @@ mongoose.set('strictQuery', false)
 const url = config.MONGODB_URI
 logger.info('Connecting', url)
 
-mongoose.connect(url)
-    .then(result => {
-        logger.info('Connected to DB')
-    })
-    .catch(caughtError => {
-        logger.error('DID NOT connect to server', caughtError.message)
-    })
+mongoose
+	.connect(url)
+	.then((result) => {
+		logger.info('Connected to DB')
+	})
+	.catch((caughtError) => {
+		logger.error('DID NOT connect to server', caughtError.message)
+	})
 
 const blogSchema = mongoose.Schema({
-    title: String,
-    author: String,
-    url: String,
-    likes: {
-        type: Number,
-        default: 0
-    },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }
+	title: String,
+	author: String,
+	url: String,
+	likes: {
+		type: Number,
+		default: 0,
+	},
+	user: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User',
+	},
+	comments: [
+		{
+			content: { type: String, required: true },
+		},
+	],
 })
 
 blogSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    },
+	transform: (document, returnedObject) => {
+		returnedObject.id = returnedObject._id.toString()
+		delete returnedObject._id
+		delete returnedObject.__v
+
+		if (returnedObject.comments) {
+			returnedObject.comments = returnedObject.comments.map((comment) => {
+				comment.id = comment._id.toString()
+				delete comment._id
+				return comment
+			})
+		}
+	},
 })
 
 module.exports = mongoose.model('Blog', blogSchema)

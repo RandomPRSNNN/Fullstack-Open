@@ -10,14 +10,13 @@ const userSlice = createSlice({
 		setUser(state, action) {
 			return action.payload
 		},
-		logOutUser(state, action) {
+		logOut(state, action) {
 			return {}
 		},
 	},
 })
 
-export const { logOutUser } = userSlice.actions
-const { setUser } = userSlice.actions
+const { setUser, logOut } = userSlice.actions
 
 export const logInUser = (username, password) => {
 	return async (dispatch) => {
@@ -32,6 +31,13 @@ export const logInUser = (username, password) => {
 		} catch (error) {
 			dispatch(displayNotification(error.response.data.error))
 		}
+	}
+}
+
+export const logOutUser = () => {
+	return (dispatch) => {
+		dispatch(logOut())
+		blogService.setToken('')
 	}
 }
 

@@ -2,79 +2,99 @@ const blogRouter = require('express').Router()
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const { request } = require('express')
 
 blogRouter.get('/', async (request, response) => {
-    const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
-    response.json(blogs)
+	const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
+	response.json(blogs)
 })
 
 blogRouter.get('/:id', async (request, response) => {
-    const blogs = await Blog.findById(request.params.id)
-    response.json(blogs)
+	const blogs = await Blog.findById(request.params.id)
+	response.json(blogs)
 })
 
 blogRouter.post('/', async (request, response) => {
-    const body = request.body
+	const body = request.body
 
-    if (!request.user) {
-        return response.status(400).json({ error: 'userId missing or not valid' })
-    }
-    if (!request.body.title || !request.body.url) {
-        return response.status(400).json({ error: 'author or url missing' })
-    }
+	if (!request.user) {
+		return response
+			.status(400)
+			.json({ error: 'userId missing or not valid' })
+	}
+	if (!request.body.title || !request.body.url) {
+		return response.status(400).json({ error: 'author or url missing' })
+	}
 
-    const blog = new Blog({
-        "title": body.title,
-        "author": body.author,
-        "url": body.url,
-        "likes": body.likes,
-        "user": request.user._id
-    })
+	const blog = new Blog({
+		title: body.title,
+		author: body.author,
+		url: body.url,
+		likes: body.likes,
+		user: request.user._id,
+	})
 
-    const savedBlog = await blog.save()
-    await savedBlog.populate('user', { username: 1, name: 1 })
-    request.user.blogs = request.user.blogs.concat(savedBlog._id)
-    await request.user.save()
-    response.status(201).json(savedBlog)
+	const savedBlog = await blog.save()
+	await savedBlog.populate('user', { username: 1, name: 1 })
+	request.user.blogs = request.user.blogs.concat(savedBlog._id)
+	await request.user.save()
+	response.status(201).json(savedBlog)
 })
 
 blogRouter.delete('/:id', async (request, response) => {
-    const blogToDelete = await Blog.findById(request.params.id)
+	const blogToDelete = await Blog.findById(request.params.id)
 
-    if (request.user.id.toString() === blogToDelete.user.toString()) {
-        await Blog.findByIdAndDelete(request.params.id)
-        response.status(204).end()
-    }
-    else {
-        response.status(403).end()
-    }
+	if (request.user.id.toString() === blogToDelete.user.toString()) {
+		await Blog.findByIdAndDelete(request.params.id)
+		response.status(204).end()
+	} else {
+		response.status(403).end()
+	}
 })
 
 blogRouter.put('/:id', async (request, response) => {
-    const blogToUpdate = await Blog.findById(request.params.id)
+	const blogToUpdate = await Blog.findById(request.params.id)
 
-    if (!blogToUpdate) {
-        response.status(404).end()
-    }
-    else if (blogToUpdate.user.equals(request.body.user.id)) {
-        const { title, author, url, likes } = request.body
+	if (!blogToUpdate) {
+		response.status(404).end()
+	} else if (blogToUpdate.user.equals(request.body.user.id)) {
+		const { title, author, url, likes } = request.body
 
-        const updatedBlog = await Blog.findByIdAndUpdate(
-            request.params.id,
-            { title, author, url, likes },
-            { new: true }
-        ).populate('user', { username: 1, name: 1 })
+		const updatedBlog = await Blog.findByIdAndUpdate(
+			request.params.id,
+			{ title, author, url, likes },
+			{ new: true },
+		).populate('user', { username: 1, name: 1 })
 
-        return response.json(updatedBlog)
-    }
-    else {
-        return response.status(401).json({ error: `unauthorized` })
-    }
+		return response.json(updatedBlog)
+	} else {
+		return response.status(401).json({ error: `unauthorized` })
+	}
+})
+
+blogRouter.put('/:id/comments', async (request, response) => {
+	const { content } = request.body
+
+	if (!content) {
+		return response.status(400).json({ error: 'content missing' })
+	}
+
+	const updatedBlog = await Blog.findByIdAndUpdate(
+		request.params.id,
+		{ $push: { comments: { content } } },
+		{ new: true, runValidators: true },
+	).populate('user', { username: 1, name: 1 })
+
+	if (updatedBlog) {
+		response.status(200).json(updatedBlog)
+	} else {
+		response.status(404).end()
+	}
 })
 
 blogRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id)
-  response.status(204).end()
+	await Blog.findByIdAndDelete(request.params.id)
+	response.status(204).end()
 })
 
 module.exports = blogRouter

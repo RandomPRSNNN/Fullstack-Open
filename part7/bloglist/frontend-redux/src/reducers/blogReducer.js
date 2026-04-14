@@ -33,10 +33,10 @@ export const initBlogs = () => {
 }
 
 export const createNew = (blog) => {
-    return async (dispatch) => {
-        const newBlog = await blogService.create(blog)
-        dispatch(addBlog(newBlog))
-    }
+	return async (dispatch) => {
+		const newBlog = await blogService.create(blog)
+		dispatch(addBlog(newBlog))
+	}
 }
 
 export const handleLike = (likedBlog) => {
@@ -44,6 +44,13 @@ export const handleLike = (likedBlog) => {
 		const blog = { ...likedBlog, likes: likedBlog.likes + 1 }
 		const updatedBlog = await blogService.update(blog)
 		dispatch(updateBlog(updatedBlog))
+	}
+}
+
+export const addComment = (blog, comment) => {
+	return async (dispatch) => {
+		const serverBlog = await blogService.addComment(blog, comment)
+		dispatch(updateBlog(serverBlog))
 	}
 }
 
